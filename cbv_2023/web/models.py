@@ -16,3 +16,6 @@ class Employee(models.Model):
             ('Senior', 'Senior'),
         )
     )
+
+    def get_absolute_url(self):
+        pass

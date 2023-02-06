@@ -1,4 +1,7 @@
 import random
+
+import form as form
+from django.urls import reverse, reverse_lazy
 from django.views.generic import TemplateView
 from django.views import generic as views
 from django import views
@@ -30,6 +33,72 @@ class IndexViewWithTemplate(views.TemplateView):
         context = super().get_context_data(**kwargs)
         context['employees'] = Employee.objects.all()
         return context
+
+
+class IndexViewWithListView(views.ListView):
+    context_object_name = 'employees'
+    model = Employee
+    template_name = 'index.html'
+    extra_context = {
+        'title': 'List view',
+    }
+
+
+class EmployeeCreateForm(form.ModelForm):
+    class Meta:
+        model = Employee
+        fields = '__all__'
+        widgets = {
+            'first_name': form.TextInput(
+                attrs={
+                    'placeholder': 'Enter Name',
+                }
+            )
+        }
+
+
+class EmployeeCreateView(views.CreateView):
+    template_name = 'employees/create.html'
+    # model = Employee
+    # fields = "__all__"
+    form_class = EmployeeCreateForm
+    # success_url = '/' --> static success url
+
+    def get_success_url(self):
+        created_object = self.object
+        return reverse_lazy('employee details', kwargs={
+            'pk': created_object.pk,
+        })
+
+    def get(self, *args, **kwargs):
+        return super().get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        return super().post(*args, **kwargs)
+
+    def get_form(self, form_class = None):
+        form = super().get_form(form_class=form_class)
+        for name, field in form.fields.items():
+            field.widget.attrs['placeholder'] = 'Enter' + name
+
+        return form
+
+
+class EmployeeUpdateView(views.UpdateView):
+    model = Employee
+    fields = '__all__'
+    template_name = 'employees/create.html'
+
+    def get_success_url(self):
+        created_object = self.object
+        return reverse_lazy('employee details', kwargs={
+            'pk': created_object.pk,
+        })
+
+
+class EmployeeDetailsView(views.DetailView):
+    model = Employee
+    template_name = 'employees/details.html'
 
 # class IndexView:
 #
